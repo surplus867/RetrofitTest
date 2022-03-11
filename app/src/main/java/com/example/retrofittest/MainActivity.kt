@@ -1,10 +1,12 @@
 package com.example.retrofittest
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.retrofittest.adapter.MyAdapter
 import com.example.retrofittest.databinding.ActivityMainBinding
 import com.example.retrofittest.repository.Repository
 
@@ -13,36 +15,32 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     private lateinit var viewModel: MainViewModel
+    private val myAdapter by lazy { MyAdapter()
+
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        setupRecyclerview()
+
         val repository = Repository()
         val viewModelFactory = MainViewModelFactory(repository)
         viewModel = ViewModelProvider(this, viewModelFactory)[MainViewModel::class.java]
-
-        val options: HashMap<String, String> = HashMap()
-        options["_sort"] = "id"
-        options["_order"] = "desc"
-
-        binding.button.setOnClickListener {
-            val myNumber : String = binding.numberEditText.text.toString()
-            viewModel.getCustomPosts2(Integer.parseInt(myNumber), options)
-            viewModel.myCustomPosts2.observe(this, Observer { response ->
-                if (response.isSuccessful) {
-                    binding.textView.text = response.body().toString()
-                    response.body()?.forEach() {
-                        Log.d("Response", it.userId.toString())
-                        Log.d("Response", it.id.toString())
-                        Log.d("Response", it.title.toString())
-                        Log.d("Response", it.body.toString())
-                    }
-                } else {
-                    binding.textView.text = response.code().toString()
-                }
-            })
+        viewModel.getCustomPosts(2, "id", "desc")
+        viewModel.myCustomPosts.observe(this) { response ->
+            if (response.isSuccessful) {
+                response.body()?.let { myAdapter.setData(it) }
+            } else {
+                Toast.makeText(this, response.code(), Toast.LENGTH_SHORT).show()
+            }
         }
+    }
+
+    private fun setupRecyclerview() {
+        binding.recyclerView.adapter = myAdapter
+        binding.recyclerView.layoutManager = LinearLayoutManager(this)
     }
 }
