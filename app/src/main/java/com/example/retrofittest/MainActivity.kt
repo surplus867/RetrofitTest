@@ -1,9 +1,9 @@
 package com.example.retrofittest
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.retrofittest.adapter.MyAdapter
@@ -29,10 +29,14 @@ class MainActivity : AppCompatActivity() {
         val repository = Repository()
         val viewModelFactory = MainViewModelFactory(repository)
         viewModel = ViewModelProvider(this, viewModelFactory)[MainViewModel::class.java]
-        viewModel.getCustomPosts(2, "id", "desc")
-        viewModel.myCustomPosts.observe(this) { response ->
+
+        //val myPost = Post(2, 2, "Minyu-Kim", "Android Developer")
+        viewModel.getPost("11112222")
+        viewModel.myResponse.observe(this) { response ->
             if (response.isSuccessful) {
-                response.body()?.let { myAdapter.setData(it) }
+                Log.d("Main", response.body().toString())
+                Log.d("Main", response.code().toString())
+                Log.d("Main", response.headers().toString())
             } else {
                 Toast.makeText(this, response.code(), Toast.LENGTH_SHORT).show()
             }
